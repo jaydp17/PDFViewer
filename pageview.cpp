@@ -24,8 +24,11 @@ void PageView::mouseReleaseEvent(QMouseEvent *ev)
 {
     if(!rubberband->size().isEmpty()){
         QRectF rect(rubberband->rect());
-        // TODO : create a rectangle with coordinates relative to the top-left corner of the image within the label
+        rect.moveLeft(rect.left() - (width() - pixmap()->width()) / 2.0);
+        rect.moveTop(rect.top() - (height() - pixmap()->height()) / 2.0);
+        emit rubberBandSelection(rect);
     }
+    rubberband->hide();
 }
 
 

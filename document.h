@@ -17,6 +17,7 @@ public:
     QImage renderPage(int index);
     int numPages();
     QRectF searchForward(QString text);
+    QString selectionText(QRectF rect);
 
 private:
     QString mFilename;

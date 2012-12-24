@@ -4,6 +4,7 @@
 #include <QLabel>
 #include <QRubberBand>
 #include <QMouseEvent>
+#include <QRectF>
 
 class PageView : public QLabel
 {
@@ -17,7 +18,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *ev);
     
 signals:
-    
+    void rubberBandSelection(QRectF rect);
 public slots:
     
 private:

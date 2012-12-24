@@ -70,3 +70,8 @@ QRectF Document::searchForward(QString text)
     }
     return QRectF();
 }
+
+QString Document::selectionText(QRectF rect)
+{
+
+}
