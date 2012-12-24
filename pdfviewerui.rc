@@ -1,0 +1,9 @@
+<gui xmlns="http://www.kde.org/standards/kxmlgui/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="docviewer" version="1" xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0 http://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd">
+<MenuBar>
+    <Menu name="file" >
+    </Menu>
+  </MenuBar>
+<ToolBar name="mainToolBar">
+<text>Main Toolbar</text>
+</ToolBar>
+</gui>
