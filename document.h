@@ -14,7 +14,7 @@ public:
     QString currentFileName();
     int currentPageIndex();
     bool openFile(QString filename);
-    QImage renderPage(int index);
+    QImage renderPage(int index, double scaleFactor);
     int numPages();
     QRectF searchForward(QString text);
     QString selectionText(QRectF rect);
@@ -27,6 +27,7 @@ private:
 
     double physicalDpiX();
     double physicalDpiY();
+    QImage renderPrivate(int index, double scaleFactor);
 };
 
 #endif // DOCUMENT_H

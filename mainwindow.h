@@ -7,6 +7,7 @@
 #include <KActionCollection>
 #include <KStandardAction>
 #include <QFileDialog>
+#include <KSelectAction>
 
 #include "document.h"
 #include "pageview.h"
@@ -15,26 +16,33 @@ namespace Ui {
 class MainWindow;
 }
 
+
+
 class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
-    
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void showPage(int index);
+    void showPage(int index, int zoomRatioIndex=3);
     
 public slots:
     void openSlot();
     bool openPDF(QString filename);
     void nextPageSlot();
     void prevPageSlot();
+    void zoominSlot();
+    void zoomoutSlot();
+    void zoomresetSlot();
+
 
 private:
     Ui::MainWindow *ui;
     void setupActions();
     Document *mDoc;
     PageView *mPageView;
+    int zoomRatioIndex;
 
     //KActions
     KAction *openAction;
@@ -43,7 +51,13 @@ private:
     KAction *quitAction;
     KAction *prevPageAction;
     KAction *nextPageAction;
+    KAction *zoominAction;
+    KAction *zoomoutAction;
 
+
+    bool nextPageExists();
+    bool prevPageExists();
+    void updateActions();
 
 };
 

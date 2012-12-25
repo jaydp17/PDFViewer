@@ -2,6 +2,7 @@
 #include <QScopedPointer>
 #include <QApplication>
 #include <QDebug>
+#include <QtConcurrentRun>
 
 Document::Document()
 {
@@ -33,10 +34,15 @@ bool Document::openFile(QString filename)
     return true;
 }
 
-QImage Document::renderPage(int index)
+QImage Document::renderPage(int index, double scaleFactor)
 {
-    int scale = 100;
-    double scaleF = scale/100;
+    QFuture<QImage> future = QtConcurrent::run(this,&Document::renderPrivate,index,scaleFactor);
+    return future.result();
+}
+
+QImage Document::renderPrivate(int index, double scaleFactor)
+{
+    double scaleF = scaleFactor;
     QImage img = pDoc->page(index)->renderToImage(scaleF * physicalDpiX(), scaleF * physicalDpiY());
     currentPage = index;
     return img;
@@ -75,3 +81,5 @@ QString Document::selectionText(QRectF rect)
 {
     return NULL;
 }
+
+
