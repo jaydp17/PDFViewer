@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateActions();
     zoomRatioIndex = zoomResetIndex;
     setupGUI(Default,"pdfviewerui.rc");
+    fdw = 0;
 }
 
 MainWindow::~MainWindow()
@@ -29,7 +30,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::showPage(int index, int zoomRatioIndex)
 {
-    mPageView->setPixmap(QPixmap::fromImage(mDoc->renderPage(index,zoomRatios[zoomRatioIndex])));
+    if(zoomRatioIndex == -1){
+        zoomRatioIndex = this->zoomRatioIndex;
+    }
+    currentPixmap = QPixmap::fromImage(mDoc->renderPage(index,zoomRatios[zoomRatioIndex]));
+    mPageView->setPixmap(currentPixmap);
+    ui->scrollArea->verticalScrollBar()->setValue(0);
     updateActions();
 }
 
@@ -84,6 +90,78 @@ void MainWindow::zoomresetSlot()
 {
 }
 
+void MainWindow::showFindDock()
+{
+    if(!fdw){
+        fdw = new FindDockWidget(this);
+        this->addDockWidget(Qt::BottomDockWidgetArea,fdw);
+        connect(fdw,SIGNAL(search(QString)),SLOT(forwardSearch(QString)));
+        connect(fdw,SIGNAL(nextClicked(QString)),SLOT(forwardSearch(QString)));
+        connect(fdw,SIGNAL(prevClicked(QString)),SLOT(backwardSearch(QString)));
+    }
+
+    // Show findDock only if a file is open
+    if(!mPageView->pixmap()){
+        fdw->hide();
+    } else {
+        fdw->show();
+    }
+
+}
+
+void MainWindow::forwardSearch(QString text)
+{
+    QRectF result;
+    if(fdw->isFullDocumentSearch()){
+        result = mDoc->searchDocument(text,Poppler::Page::NextResult,fdw->caseSensitivity());
+    } else {
+        result = mDoc->searchPage(text,Poppler::Page::NextResult,fdw->caseSensitivity());
+    }
+
+    if(result.isEmpty()){
+        return;
+    }
+
+    this->showPage(mDoc->currentPageIndex());
+    QPixmap pxmap(currentPixmap);
+    QPainter painter(&pxmap);
+    QColor highlightColor(Qt::darkBlue);
+    highlightColor.setAlpha(125);
+    painter.setPen(highlightColor);
+    painter.setBrush(highlightColor);
+    result = fixRelativePos(result);
+    painter.fillRect(result,highlightColor);
+
+    mPageView->setPixmap(pxmap);
+    ui->scrollArea->ensureVisible(result.x(),result.y(),50,mPageView->height()/4);
+}
+
+void MainWindow::backwardSearch(QString text)
+{
+    QRectF result;
+    if(fdw->isFullDocumentSearch()){
+        result = mDoc->searchDocument(text,Poppler::Page::PreviousResult,fdw->caseSensitivity());
+    } else {
+        result = mDoc->searchPage(text,Poppler::Page::PreviousResult,fdw->caseSensitivity());
+    }
+
+    if(result.isEmpty()){
+        return;
+    }
+
+    this->showPage(mDoc->currentPageIndex());
+    QPixmap pxmap(currentPixmap);
+    QPainter painter(&pxmap);
+    QColor highlightColor(Qt::darkBlue);
+    highlightColor.setAlpha(125);
+    painter.setPen(highlightColor);
+    painter.setBrush(highlightColor);
+    result = fixRelativePos(result);
+    painter.fillRect(result,highlightColor);
+
+    mPageView->setPixmap(pxmap);
+}
+
 void MainWindow::setupActions()
 {
     KStandardAction::open(this,SLOT(openSlot()),actionCollection());
@@ -91,6 +169,8 @@ void MainWindow::setupActions()
     nextPageAction = KStandardAction::documentForward(this,SLOT(nextPageSlot()),actionCollection());
     zoominAction = KStandardAction::zoomIn(this,SLOT(zoominSlot()),actionCollection());
     zoomoutAction = KStandardAction::zoomOut(this,SLOT(zoomoutSlot()),actionCollection());
+    KStandardAction::find(this,SLOT(showFindDock()),actionCollection());
+    KStandardAction::quit(kapp,SLOT(quit()),actionCollection());
 }
 
 bool MainWindow::nextPageExists()
@@ -129,4 +209,13 @@ void MainWindow::updateActions()
         zoomoutAction->setEnabled(zoomRatios[--zoomRatioIndex] > 0.25);
         zoominAction->setEnabled(zoomRatios[++zoomRatioIndex] < 4);
     }
+}
+
+QRectF MainWindow::fixRelativePos(QRectF rect)
+{
+    QRectF r(rect);
+    // This need to be implemented using Qmatrix
+//    r.moveLeft(r.left() + (mPageView->width() - currentPixmap.width()) / 2.0);
+//    r.moveTop(r.top() + (mPageView->height() - currentPixmap.height()) / 2.0);
+    return r;
 }

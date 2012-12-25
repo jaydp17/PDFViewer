@@ -16,7 +16,8 @@ public:
     bool openFile(QString filename);
     QImage renderPage(int index, double scaleFactor);
     int numPages();
-    QRectF searchForward(QString text);
+    QRectF searchDocument(QString text, Poppler::Page::SearchDirection direction, Poppler::Page::SearchMode caseSensitivity);
+    QRectF searchPage(QString text, Poppler::Page::SearchDirection direction, Poppler::Page::SearchMode caseSensitivity);
     QString selectionText(QRectF rect);
 
 private:
@@ -24,6 +25,7 @@ private:
     int currentPage;
     Poppler::Document *pDoc;
     QRectF searchLocation;
+    QString prevSearchtext;
 
     double physicalDpiX();
     double physicalDpiY();

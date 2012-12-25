@@ -6,11 +6,15 @@
 #include <KApplication>
 #include <KActionCollection>
 #include <KStandardAction>
-#include <QFileDialog>
 #include <KSelectAction>
+#include <KMessageBox>
+
+#include <QFileDialog>
+#include <QtGui>
 
 #include "document.h"
 #include "pageview.h"
+#include "finddockwidget.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,7 +29,7 @@ class MainWindow : public KXmlGuiWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void showPage(int index, int zoomRatioIndex=3);
+    void showPage(int index, int zoomRatioIndex=-1);
     
 public slots:
     void openSlot();
@@ -35,6 +39,9 @@ public slots:
     void zoominSlot();
     void zoomoutSlot();
     void zoomresetSlot();
+    void showFindDock();
+    void forwardSearch(QString text);
+    void backwardSearch(QString text);
 
 
 private:
@@ -42,7 +49,9 @@ private:
     void setupActions();
     Document *mDoc;
     PageView *mPageView;
+    QPixmap currentPixmap;
     int zoomRatioIndex;
+    QDockWidget *dock;
 
     //KActions
     KAction *openAction;
@@ -58,7 +67,10 @@ private:
     bool nextPageExists();
     bool prevPageExists();
     void updateActions();
+    QRectF fixRelativePos(QRectF rect);
 
+    //Dock widgets
+    FindDockWidget *fdw;
 };
 
 #endif // MAINWINDOW_H
