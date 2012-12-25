@@ -42,7 +42,28 @@ bool MainWindow::openPDF(QString filename)
     return true;
 }
 
+void MainWindow::nextPageSlot()
+{
+    if(mDoc->currentPageIndex() != (mDoc->numPages()-1))
+        showPage(mDoc->currentPageIndex()+1);
+}
+
+void MainWindow::prevPageSlot()
+{
+    if(mDoc->currentPageIndex() != 0)
+        showPage(mDoc->currentPageIndex()-1);
+}
+
 void MainWindow::setupActions()
 {
     KStandardAction::open(this,SLOT(openSlot()),actionCollection());
+    prevPageAction = new KAction("Previous",this);
+    nextPageAction = new KAction("Next",this);
+
+    actionCollection()->addAction("prevPage",prevPageAction);
+    actionCollection()->addAction("nextPage",nextPageAction);
+
+
+    connect(prevPageAction,SIGNAL(triggered()),SLOT(prevPageSlot()));
+    connect(nextPageAction,SIGNAL(triggered()),SLOT(nextPageSlot()));
 }

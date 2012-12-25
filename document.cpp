@@ -73,5 +73,5 @@ QRectF Document::searchForward(QString text)
 
 QString Document::selectionText(QRectF rect)
 {
-
+    return NULL;
 }

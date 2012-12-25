@@ -5,5 +5,7 @@
   </MenuBar>
 <ToolBar name="mainToolBar">
 <text>Main Toolbar</text>
+<Action name="prevPage" />
+<Action name="nextPage" />
 </ToolBar>
 </gui>

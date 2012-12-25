@@ -24,6 +24,7 @@ public slots:
 private:
     QRubberBand *rubberband;
     QPoint origin;
+    QRectF rref;
 };
 
 #endif // PAGEVIEW_H

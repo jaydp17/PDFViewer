@@ -27,6 +27,8 @@ public:
 public slots:
     void openSlot();
     bool openPDF(QString filename);
+    void nextPageSlot();
+    void prevPageSlot();
 
 private:
     Ui::MainWindow *ui;
@@ -39,6 +41,8 @@ private:
     KAction *closeAction;
     KAction *reloadAction;
     KAction *quitAction;
+    KAction *prevPageAction;
+    KAction *nextPageAction;
 
 
 };
