@@ -63,6 +63,15 @@ double Document::physicalDpiY()
     return qApp->desktop()->physicalDpiY();
 }
 
+QList<QRectF> Document::selectAllInBetween(QList<Poppler::TextBox *> textList, int index, QRectF fullselection)
+{
+    QList<QRectF> list;
+    Poppler::TextBox *prevBox = textList.at(--index);
+    fullselection.setWidth(prevBox->boundingBox().right() - fullselection.left());
+    list.append(fullselection);
+    return list;
+}
+
 int Document::numPages(){
     return pDoc->numPages();
 }
@@ -145,9 +154,54 @@ QRectF Document::searchPage(QString text, Poppler::Page::SearchDirection directi
     return QRectF();
 }
 
-QString Document::selectionText(QRectF rect)
+QList<QRectF> Document::selectionText(QRectF rect)
 {
-    return NULL;
+    QString text = "";
+    QList<QRectF> selection;
+    QPointF center;
+    QRectF fullselection;
+    QList<Poppler::TextBox*> textList = pDoc->page(currentPageIndex())->textList();
+
+    foreach(Poppler::TextBox *txtBox, textList){
+        if(rect.intersects(txtBox->boundingBox())){
+            for(int i=0;i<txtBox->text().size();i++){
+                QRectF charBox = txtBox->charBoundingBox(i);
+                if(rect.intersects(charBox)){
+                    // check on the starting of the word of it's a word on next line
+                    if(i == 0){
+                        if(!center.isNull() && txtBox->boundingBox().center().y() > center.y()){
+                            text += "\n";
+                            QList<QRectF> inBetween = selectAllInBetween(textList,textList.indexOf(txtBox),fullselection);
+                            selection.append(inBetween);
+                            fullselection = QRectF();
+                        }
+                        if(fullselection.isEmpty()){
+                            fullselection = QRectF(txtBox->boundingBox());
+                        }
+                        center = txtBox->boundingBox().center();
+                    }
+
+                    text += txtBox->text().at(i);
+                    fullselection.setWidth(charBox.right() - fullselection.left());
+
+                    // check on the end of the word if it has a space after the word
+                    if((i+1) == txtBox->text().size()){
+                        if(txtBox->hasSpaceAfter()){
+                            text += " ";
+                        }
+                    }
+                }
+            }
+        }
+    }
+    selection.append(fullselection);
+    mSelectedText = text;
+    return selection;
+}
+
+QString Document::selectedText()
+{
+    return mSelectedText;
 }
 
 

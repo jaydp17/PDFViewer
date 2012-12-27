@@ -18,7 +18,8 @@ public:
     int numPages();
     QRectF searchDocument(QString text, Poppler::Page::SearchDirection direction, Poppler::Page::SearchMode caseSensitivity);
     QRectF searchPage(QString text, Poppler::Page::SearchDirection direction, Poppler::Page::SearchMode caseSensitivity);
-    QString selectionText(QRectF rect);
+    QList<QRectF> selectionText(QRectF rect);
+    QString selectedText();
 
 private:
     QString mFilename;
@@ -26,9 +27,11 @@ private:
     Poppler::Document *pDoc;
     QRectF searchLocation;
     QString prevSearchtext;
+    QString mSelectedText;
 
     double physicalDpiX();
     double physicalDpiY();
+    QList<QRectF> selectAllInBetween(QList<Poppler::TextBox*> textList, int index, QRectF fullselection);
     QImage renderPrivate(int index, double scaleFactor);
 };
 

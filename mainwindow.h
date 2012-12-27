@@ -38,20 +38,23 @@ public slots:
     void prevPageSlot();
     void zoominSlot();
     void zoomoutSlot();
+    void zoomSelectChanged();
     void zoomresetSlot();
     void showFindDock();
     void forwardSearch(QString text);
     void backwardSearch(QString text);
+    void showSelectedText(QRectF rect);
 
 
 private:
     Ui::MainWindow *ui;
     void setupActions();
+    void setupTextDock();
     Document *mDoc;
     PageView *mPageView;
-    QPixmap currentPixmap;
     int zoomRatioIndex;
-    QDockWidget *dock;
+    QDockWidget *textDock;
+    QTextEdit *le;
 
     //KActions
     KAction *openAction;
@@ -62,6 +65,7 @@ private:
     KAction *nextPageAction;
     KAction *zoominAction;
     KAction *zoomoutAction;
+    KSelectAction *zoomSelectAction;
 
 
     bool nextPageExists();
@@ -71,6 +75,9 @@ private:
 
     //Dock widgets
     FindDockWidget *fdw;
+
+private slots:
+    void sendDocumentPointer();
 };
 
 #endif // MAINWINDOW_H

@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mDoc = new Document();
 
     setupActions();
+    setupTextDock();
     updateActions();
     zoomRatioIndex = zoomResetIndex;
     setupGUI(Default,"pdfviewerui.rc");
@@ -33,8 +34,8 @@ void MainWindow::showPage(int index, int zoomRatioIndex)
     if(zoomRatioIndex == -1){
         zoomRatioIndex = this->zoomRatioIndex;
     }
-    currentPixmap = QPixmap::fromImage(mDoc->renderPage(index,zoomRatios[zoomRatioIndex]));
-    mPageView->setPixmap(currentPixmap);
+    QPixmap pxmap = QPixmap::fromImage(mDoc->renderPage(index,zoomRatios[zoomRatioIndex]));
+    mPageView->setCurrentPixmap(pxmap);
     ui->scrollArea->verticalScrollBar()->setValue(0);
     updateActions();
 }
@@ -66,28 +67,24 @@ void MainWindow::prevPageSlot()
 
 void MainWindow::zoominSlot()
 {
-    if(zoomRatios[++zoomRatioIndex] < 4){
-        showPage(mDoc->currentPageIndex(),zoomRatioIndex);
-        zoominAction->setEnabled(true);
-    } else {
-        showPage(mDoc->currentPageIndex(),zoomRatioIndex);
-        zoominAction->setEnabled(false);
-    }
+    showPage(mDoc->currentPageIndex(),++zoomRatioIndex);
 }
 
 void MainWindow::zoomoutSlot()
 {
-    if(zoomRatios[--zoomRatioIndex] > 0.25){
-        showPage(mDoc->currentPageIndex(),zoomRatioIndex);
-        zoomoutAction->setEnabled(true);
-    } else {
-        showPage(mDoc->currentPageIndex(),zoomRatioIndex);
-        zoomoutAction->setEnabled(false);
-    }
+    showPage(mDoc->currentPageIndex(),--zoomRatioIndex);
+}
+
+void MainWindow::zoomSelectChanged()
+{
+    int index = zoomSelectAction->currentItem();
+    zoomRatioIndex = index;
+    showPage(mDoc->currentPageIndex(),index);
 }
 
 void MainWindow::zoomresetSlot()
 {
+    showPage(mDoc->currentPageIndex(),zoomResetIndex);
 }
 
 void MainWindow::showFindDock()
@@ -123,16 +120,7 @@ void MainWindow::forwardSearch(QString text)
     }
 
     this->showPage(mDoc->currentPageIndex());
-    QPixmap pxmap(currentPixmap);
-    QPainter painter(&pxmap);
-    QColor highlightColor(Qt::darkBlue);
-    highlightColor.setAlpha(125);
-    painter.setPen(highlightColor);
-    painter.setBrush(highlightColor);
-    result = fixRelativePos(result);
-    painter.fillRect(result,highlightColor);
-
-    mPageView->setPixmap(pxmap);
+    mPageView->highlight(result);
     ui->scrollArea->ensureVisible(result.x(),result.y(),50,mPageView->height()/4);
 }
 
@@ -150,16 +138,14 @@ void MainWindow::backwardSearch(QString text)
     }
 
     this->showPage(mDoc->currentPageIndex());
-    QPixmap pxmap(currentPixmap);
-    QPainter painter(&pxmap);
-    QColor highlightColor(Qt::darkBlue);
-    highlightColor.setAlpha(125);
-    painter.setPen(highlightColor);
-    painter.setBrush(highlightColor);
-    result = fixRelativePos(result);
-    painter.fillRect(result,highlightColor);
+    mPageView->highlight(result);
+}
 
-    mPageView->setPixmap(pxmap);
+void MainWindow::showSelectedText(QRectF rect)
+{
+//    QString text = mDoc->selectionText(rect);
+//    le->setText(text);
+//    textDock->show();
 }
 
 void MainWindow::setupActions()
@@ -167,10 +153,34 @@ void MainWindow::setupActions()
     KStandardAction::open(this,SLOT(openSlot()),actionCollection());
     prevPageAction = KStandardAction::documentBack(this,SLOT(prevPageSlot()),actionCollection());
     nextPageAction = KStandardAction::documentForward(this,SLOT(nextPageSlot()),actionCollection());
+
     zoominAction = KStandardAction::zoomIn(this,SLOT(zoominSlot()),actionCollection());
+    zoomSelectAction = new KSelectAction(this);
+    zoomSelectAction->setItems(QStringList() << "25%"<< "50%"<< "75%"<< "100%"<< "125%"<< "150%"<< "175%"<< "200%"<< "250%"<< "300%" << "350%"<< "400%");
+    zoomSelectAction->setCurrentItem(zoomResetIndex);
+    connect(zoomSelectAction,SIGNAL(triggered(int)),SLOT(zoomSelectChanged()));
+    actionCollection()->addAction("zoom_select",zoomSelectAction);
     zoomoutAction = KStandardAction::zoomOut(this,SLOT(zoomoutSlot()),actionCollection());
+
     KStandardAction::find(this,SLOT(showFindDock()),actionCollection());
     KStandardAction::quit(kapp,SLOT(quit()),actionCollection());
+
+
+}
+
+void MainWindow::setupTextDock()
+{
+    le = new QTextEdit(this);
+    le->setReadOnly(true);
+    textDock = new QDockWidget("Selected text",this);
+    textDock->setObjectName("select_text");
+    textDock->setFloating(false);
+    textDock->setAllowedAreas(Qt::BottomDockWidgetArea);
+    textDock->setWidget(le);
+    this->addDockWidget(Qt::BottomDockWidgetArea,textDock);
+    connect(mPageView,SIGNAL(rubberBandSelection(QRectF)),SLOT(showSelectedText(QRectF)));
+
+    connect(mPageView,SIGNAL(getDocumentPointer()),SLOT(sendDocumentPointer()));
 }
 
 bool MainWindow::nextPageExists()
@@ -203,11 +213,15 @@ void MainWindow::updateActions()
         nextPageAction->setEnabled(false);
         zoominAction->setEnabled(false);
         zoomoutAction->setEnabled(false);
+        zoomSelectAction->selectableActionGroup()->setEnabled(false);
+        textDock->close();
     } else {
         nextPageExists();
         prevPageExists();
-        zoomoutAction->setEnabled(zoomRatios[--zoomRatioIndex] > 0.25);
-        zoominAction->setEnabled(zoomRatios[++zoomRatioIndex] < 4);
+        zoomSelectAction->selectableActionGroup()->setEnabled(true);
+        zoomoutAction->setEnabled((zoomRatioIndex==0)?false:true);
+        zoominAction->setEnabled((zoomRatios[zoomRatioIndex]==4)?false:true);
+        zoomSelectAction->setCurrentItem(zoomRatioIndex);
     }
 }
 
@@ -215,7 +229,12 @@ QRectF MainWindow::fixRelativePos(QRectF rect)
 {
     QRectF r(rect);
     // This need to be implemented using Qmatrix
-//    r.moveLeft(r.left() + (mPageView->width() - currentPixmap.width()) / 2.0);
-//    r.moveTop(r.top() + (mPageView->height() - currentPixmap.height()) / 2.0);
+    //    r.moveLeft(r.left() + (mPageView->width() - currentPixmap.width()) / 2.0);
+    //    r.moveTop(r.top() + (mPageView->height() - currentPixmap.height()) / 2.0);
     return r;
+}
+
+void MainWindow::sendDocumentPointer()
+{
+    mPageView->setDocumentPointer(mDoc);
 }

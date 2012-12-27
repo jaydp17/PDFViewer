@@ -11,7 +11,7 @@ FindDockWidget::FindDockWidget(QWidget *parent) :
     connect(ui->btnNext,SIGNAL(clicked()),SLOT(searchNext()));
     connect(ui->casesensitive,SIGNAL(toggled(bool)),SLOT(caseSensChanged(bool)));
     connect(ui->fulldoc,SIGNAL(toggled(bool)),SLOT(fullDocChanged(bool)));
-
+    this->layout()->setSizeConstraint(QLayout::SetMinimumSize);
 }
 
 FindDockWidget::~FindDockWidget()

@@ -8,6 +8,7 @@
 <Action name="go_document_back" />
 <Action name="go_document_forward" />
 <Action name="view_zoom_in" />
+<Action name="zoom_select" />
 <Action name="view_zoom_out" />
 </ToolBar>
 </gui>
