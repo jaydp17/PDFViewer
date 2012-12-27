@@ -13,7 +13,21 @@ MainWindow::MainWindow(QWidget *parent) :
     mPageView = new PageView;
     ui->scrollArea->setWidget(mPageView);
     ui->scrollArea->setBackgroundRole(QPalette::Dark);
-    this->setCentralWidget(ui->scrollArea);
+    //this->setCentralWidget(ui->scrollArea);
+    tree = new QTreeWidget(this);
+    tree->setColumnCount(2);
+    tree->header()->hide();
+    tree->header()->setStretchLastSection(false);
+    tree->header()->setResizeMode(0,QHeaderView::Stretch);
+    tree->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    splitter = new QSplitter(this);
+    //this->setCentralWidget(splitter);
+    splitter->addWidget(tree);
+    splitter->addWidget(ui->scrollArea);
+    splitter->setStretchFactor(0,0);
+    splitter->setStretchFactor(1,1);
+
+    ui->horizontalLayout->addWidget(splitter);
     mDoc = new Document();
 
     setupActions();
@@ -51,6 +65,7 @@ bool MainWindow::openPDF(QString filename)
 {
     mDoc->openFile(filename);
     showPage(0);
+    showTOC();
     // return false if some problem occurs
     return true;
 }
@@ -181,6 +196,18 @@ void MainWindow::setupTextDock()
     connect(mPageView,SIGNAL(rubberBandSelection(QRectF)),SLOT(showSelectedText(QRectF)));
 
     connect(mPageView,SIGNAL(getDocumentPointer()),SLOT(sendDocumentPointer()));
+}
+
+void MainWindow::showTOC()
+{
+    mDoc->showTOC(tree,0);
+    connect(tree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),SLOT(tocClicked(QTreeWidgetItem*,int)));
+}
+
+void MainWindow::tocClicked(QTreeWidgetItem *item, int col)
+{
+    int pageNumber = item->text(1).toInt();
+    showPage(--pageNumber);
 }
 
 bool MainWindow::nextPageExists()

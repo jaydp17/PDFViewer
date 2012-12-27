@@ -11,6 +11,8 @@
 
 #include <QFileDialog>
 #include <QtGui>
+#include <QSplitter>
+#include <QTreeWidget>
 
 #include "document.h"
 #include "pageview.h"
@@ -50,6 +52,7 @@ private:
     Ui::MainWindow *ui;
     void setupActions();
     void setupTextDock();
+    void showTOC();
     Document *mDoc;
     PageView *mPageView;
     int zoomRatioIndex;
@@ -75,9 +78,12 @@ private:
 
     //Dock widgets
     FindDockWidget *fdw;
+    QSplitter *splitter;
+    QTreeWidget *tree;
 
 private slots:
     void sendDocumentPointer();
+    void tocClicked(QTreeWidgetItem *item,int col);
 };
 
 #endif // MAINWINDOW_H

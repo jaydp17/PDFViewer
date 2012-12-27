@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QDesktopWidget>
+#include <QtGui>
 
 #include <poppler-qt4.h>
 
@@ -20,6 +21,7 @@ public:
     QRectF searchPage(QString text, Poppler::Page::SearchDirection direction, Poppler::Page::SearchMode caseSensitivity);
     QList<QRectF> selectionText(QRectF rect);
     QString selectedText();
+    void showTOC(QTreeWidget *tree, QTreeWidgetItem *parentItem);
 
 private:
     QString mFilename;
@@ -28,11 +30,13 @@ private:
     QRectF searchLocation;
     QString prevSearchtext;
     QString mSelectedText;
+    QMap<QString,QString> *refMapping;
 
     double physicalDpiX();
     double physicalDpiY();
     QList<QRectF> selectAllInBetween(QList<Poppler::TextBox*> textList, int index, QRectF fullselection);
     QImage renderPrivate(int index, double scaleFactor);
+    void fillTOC(const QDomNode &parent, QTreeWidget *tree, QTreeWidgetItem *parentItem);
 };
 
 #endif // DOCUMENT_H

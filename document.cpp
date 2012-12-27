@@ -51,6 +51,34 @@ QImage Document::renderPrivate(int index, double scaleFactor)
     return img;
 }
 
+void Document::fillTOC(const QDomNode &parent, QTreeWidget *tree, QTreeWidgetItem *parentItem)
+{
+    QTreeWidgetItem *newItem = 0;
+    QDomNode node = parent.firstChild();
+    for(; !node.isNull(); node=node.nextSibling()){
+        QDomElement elem = node.toElement();
+        if(!parentItem){
+            newItem = new QTreeWidgetItem(tree,newItem);
+        } else {
+            newItem = new QTreeWidgetItem(parentItem,newItem);
+        }
+        newItem->setText(0,elem.tagName());
+        QString destination = elem.attribute(QString::fromLatin1("Destination"));
+        if(!destination.isEmpty()){
+            QStringList crap = destination.split(";");
+            newItem->setText(1,crap[1]);
+        }
+//        qDebug() << "constins Destination : " << elem.hasAttribute("Destination");
+//        qDebug() << "constins DestinationName : " << elem.hasAttribute("DestinationName");
+//        qDebug() << "constins ExternalFileName : " << elem.hasAttribute("ExternalFileName");
+//        qDebug() << "constins Open : " << elem.hasAttribute("Open");
+
+        if(elem.hasChildNodes()){
+            fillTOC(node,tree,newItem);
+        }
+    }
+}
+
 double Document::physicalDpiX()
 {
     qDebug() << qApp->desktop()->physicalDpiX();
@@ -204,4 +232,13 @@ QString Document::selectedText()
     return mSelectedText;
 }
 
+void Document::showTOC(QTreeWidget *tree, QTreeWidgetItem *parentItem)
+{
+    QDomDocument *toc = pDoc->toc();
+    if(!toc && toc->isNull()){
+        qDebug() << "toc NULL POINTER";
+        return;
+    }
+    this->fillTOC(toc->cloneNode(true),tree,parentItem);
+}
 
