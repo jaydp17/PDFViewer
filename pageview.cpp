@@ -59,7 +59,7 @@ void PageView::mousePressEvent(QMouseEvent *ev)
         rubberband = new QRubberBand(QRubberBand::Rectangle,this);
     }
     rubberband->setGeometry(QRect(origin, QSize()));
-    rubberband->show();
+    //rubberband->show();
 }
 
 void PageView::mouseMoveEvent(QMouseEvent *ev)

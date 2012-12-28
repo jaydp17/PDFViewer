@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
+#include <KInputDialog>
 
 double zoomRatios[] = {0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3 , 3.5, 4};
 int zoomResetIndex = 3;
@@ -160,7 +161,14 @@ void MainWindow::showSelectedText(QRectF rect)
 {
 //    QString text = mDoc->selectionText(rect);
 //    le->setText(text);
-//    textDock->show();
+    //    textDock->show();
+}
+
+void MainWindow::gotoPageSlot()
+{
+    bool ok;
+    int pageNum = KInputDialog::getInteger("Go to page","Enter page number",mDoc->currentPageIndex()+1,1,mDoc->numPages()+1,1,&ok,this);
+    showPage(--pageNum);
 }
 
 void MainWindow::setupActions()
@@ -177,6 +185,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction("zoom_select",zoomSelectAction);
     zoomoutAction = KStandardAction::zoomOut(this,SLOT(zoomoutSlot()),actionCollection());
 
+    KStandardAction::gotoPage(this,SLOT(gotoPageSlot()),actionCollection());
     KStandardAction::find(this,SLOT(showFindDock()),actionCollection());
     KStandardAction::quit(kapp,SLOT(quit()),actionCollection());
 

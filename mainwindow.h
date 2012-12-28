@@ -46,6 +46,7 @@ public slots:
     void forwardSearch(QString text);
     void backwardSearch(QString text);
     void showSelectedText(QRectF rect);
+    void gotoPageSlot();
 
 
 private:
@@ -69,6 +70,7 @@ private:
     KAction *zoominAction;
     KAction *zoomoutAction;
     KSelectAction *zoomSelectAction;
+    KSelectAction *pageSelectAction;
 
 
     bool nextPageExists();

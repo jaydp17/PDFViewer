@@ -10,5 +10,6 @@
 <Action name="view_zoom_in" />
 <Action name="zoom_select" />
 <Action name="view_zoom_out" />
+<Action name="go_goto_page" />
 </ToolBar>
 </gui>
